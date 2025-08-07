@@ -28,13 +28,22 @@ public class TaskService {
         try {
             return taskRepository.findAll();
         }catch (SQLException e){
-            throw new RuntimeException("Error fetching all tasks from databse", e);
+            throw new RuntimeException("Error fetching all tasks from database", e);
         }
     }
 
     public Task create(Task task) throws SQLException{
         validate(task);
         return taskRepository.createTask(task);
+    }
+
+    public Task update(Task task) throws SQLException{
+        validate(task);
+        return taskRepository.updateTask(task);
+    }
+
+    public boolean delete(long id) throws SQLException{
+        return taskRepository.delete(id);
     }
 
     public void validate(Task task) throws IllegalArgumentException{

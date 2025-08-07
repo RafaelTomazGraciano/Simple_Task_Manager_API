@@ -69,19 +69,48 @@ public class TaskRepository {
             return task;
 
         }catch(SQLException e){
-            System.err.println("Error saving task in databse: " + e.getMessage());
+            System.err.println("Error saving task in database: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
     }
 
-//    public void update(Task task){
-//
-//    }
-//
-//    public void delete(Task task){
-//
-//    }
+    public Task updateTask(Task task){
+        String sql = "UPDATE task SET title = ?, description = ?, due_date = ?, status = ? WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+            statement.setString(1, task.getTitle());
+            statement.setString(2, task.getDescription());
+            statement.setDate(3, Date.valueOf(task.getDueDate()));
+            statement.setString(4, task.getStatus());
+            statement.setLong(5, task.getId());
+
+            int rowUpdated = statement.executeUpdate();
+            if (rowUpdated > 0){
+                return task;
+            }
+        }catch (SQLException e){
+            System.err.println("Error saving task in database: " + e.getMessage());
+        }
+        return  null;
+    }
+
+    public boolean delete(long id){
+        String sql = "DELETE FROM task WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+
+            statement.setLong(1, id);
+
+            int rowDeleted = statement.executeUpdate();
+            return rowDeleted > 0;
+        }catch (SQLException e){
+            System.err.println("Error deleting task: " + e.getMessage());
+        }
+        return false;
+    }
 
     private Task mapResultSetToTask(ResultSet resultSet) throws SQLException {
         Task task = new Task();

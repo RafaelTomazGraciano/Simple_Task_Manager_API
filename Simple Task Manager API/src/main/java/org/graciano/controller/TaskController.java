@@ -43,7 +43,7 @@ public class TaskController implements HttpHandler {
                 case "GET":
                     if (id != -1) {
                         handleGetTaskById(exchange, id);
-                    } else { 
+                    } else {
                         handleListTasks(exchange);
                     }
                     break;
@@ -52,13 +52,13 @@ public class TaskController implements HttpHandler {
                     if (id == -1) {
                         handleCreateTask(exchange);
                     } else {
-                        sendResponse(exchange, 400, "{\"error\": \"Invalid request for POST\"}");
+                        sendResponse(exchange, 400, "{\"error\": \"Invalid Request\"}");
                     }
                     break;
 
                 case "PUT":
                     if (id != -1) {
-                        // handleUpdateTask(exchange, id);
+                        handleUpdateTask(exchange, id);
                     } else {
                         sendResponse(exchange, 400, "{\"error\": \"Missing task ID\"}");
                     }
@@ -66,7 +66,7 @@ public class TaskController implements HttpHandler {
 
                 case "DELETE":
                     if (id != -1) {
-                        // handleDeleteTask(exchange, id);
+                        handleDeleteTask(exchange, id);
                     } else {
                         sendResponse(exchange, 400, "{\"error\": \"Missing task ID\"}");
                     }
@@ -128,6 +128,43 @@ public class TaskController implements HttpHandler {
             System.err.println(e.getMessage());
             sendResponse(exchange, 400, "{\"error\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
+            e.printStackTrace();
+            sendResponse(exchange, 500, "{\"error\": \"Internal Server Error\"}");
+        }
+    }
+
+    private void handleUpdateTask(HttpExchange exchange, long id) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        try {
+            InputStream requestBody = exchange.getRequestBody();
+            Task task = mapper.readValue(requestBody, Task.class);
+            task.setId(id);
+            Task updatedtask = taskService.update(task);
+
+            if (updatedtask != null) {
+                String jsonResponse = mapper.writeValueAsString(updatedtask);
+                sendResponse(exchange, 200, jsonResponse);
+            }else  {
+                sendResponse(exchange, 400, "{\"error\": \"Task not found\"}");
+            }
+        }catch (IllegalArgumentException e){
+            System.err.println(e.getMessage());
+            sendResponse(exchange, 400, "{\"error\": \"" + e.getMessage() + "\"}");
+        }catch (Exception e){
+            e.printStackTrace();
+            sendResponse(exchange, 500, "{\"error\": \"Internal Server Error\"}");
+        }
+    }
+
+    private void handleDeleteTask(HttpExchange exchange, long id) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        try {
+            if (taskService.delete(id)){
+                sendResponse(exchange, 200, "Task with id " + id + " deleted successfully");
+            }else {
+                sendResponse(exchange, 400, "{\"error\": \"Task not found\"}");
+            }
+        }catch (Exception e){
             e.printStackTrace();
             sendResponse(exchange, 500, "{\"error\": \"Internal Server Error\"}");
         }
