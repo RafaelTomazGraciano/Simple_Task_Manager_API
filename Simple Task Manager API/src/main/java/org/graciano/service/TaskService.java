@@ -5,7 +5,7 @@ import org.graciano.repository.TaskRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class TaskService {
@@ -14,6 +14,22 @@ public class TaskService {
     private static final Set<String> VALID_STATUS = Set.of("pending", "in_progress", "done");
 
     public TaskService() {
+    }
+
+    public Task findById(long id) {
+        try {
+            return taskRepository.findById(id);
+        }catch (SQLException e){
+            throw new RuntimeException("Error fetching task from database", e);
+        }
+    }
+
+    public List<Task> findAll(){
+        try {
+            return taskRepository.findAll();
+        }catch (SQLException e){
+            throw new RuntimeException("Error fetching all tasks from databse", e);
+        }
     }
 
     public Task create(Task task) throws SQLException{

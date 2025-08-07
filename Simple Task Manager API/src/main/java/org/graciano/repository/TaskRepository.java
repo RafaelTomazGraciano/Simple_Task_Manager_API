@@ -4,9 +4,48 @@ import org.graciano.model.Task;
 import org.graciano.util.DatabaseConnection;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskRepository {
+
+    public Task findById(long id) throws SQLException{
+        String sql = "SELECT * FROM task WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    return mapResultSetToTask(resultSet);
+                }
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw new SQLException("Failed to find task with ID " + id, e);
+        }
+        return null;
+    }
+
+    public List<Task> findAll() throws SQLException{
+        String sql = "SELECT * FROM task";
+        List<Task> tasks = new ArrayList<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()){
+
+            while (resultSet.next()){
+                tasks.add(mapResultSetToTask(resultSet));
+            }
+            return tasks;
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw new SQLException("Failed to find task with ID " + e);
+        }
+    }
 
     public Task createTask(Task task){
         String sql = "INSERT INTO task (title, description, due_date, status) VALUES (?, ?, ?, ?)";
@@ -43,9 +82,15 @@ public class TaskRepository {
 //    public void delete(Task task){
 //
 //    }
-//
-//    public List<Task> findAll(){
-//
-//    }
+
+    private Task mapResultSetToTask(ResultSet resultSet) throws SQLException {
+        Task task = new Task();
+        task.setId(resultSet.getLong("id"));
+        task.setTitle(resultSet.getString("title"));
+        task.setDescription(resultSet.getString("description"));
+        task.setDueDate(resultSet.getDate("due_date").toLocalDate());
+        task.setStatus(resultSet.getString("status"));
+        return task;
+    }
 
 }
