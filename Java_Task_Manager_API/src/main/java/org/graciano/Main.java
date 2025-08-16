@@ -1,7 +1,7 @@
 package org.graciano;
 
 import com.sun.net.httpserver.HttpServer;
-import org.graciano.controller.TaskController;
+import org.graciano.controller.RoutesController;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,7 +12,7 @@ public class Main {
             HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
             //register routes
-            server.createContext("/tasks", new TaskController());
+            server.createContext("/tasks", new RoutesController());
 
             server.setExecutor(null);
             server.start();

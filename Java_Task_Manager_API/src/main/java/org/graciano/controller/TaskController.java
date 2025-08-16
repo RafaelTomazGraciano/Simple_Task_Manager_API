@@ -3,7 +3,6 @@ package org.graciano.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import org.graciano.model.Task;
 import org.graciano.service.TaskService;
 
@@ -13,7 +12,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class TaskController implements HttpHandler {
+public class TaskController {
     private final ObjectMapper mapper = new ObjectMapper();
     private final TaskService taskService = new TaskService();
 
@@ -21,70 +20,7 @@ public class TaskController implements HttpHandler {
         this.mapper.registerModule(new JavaTimeModule());
     }
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-
-        long id = -1;
-        String[] segments = path.split("/");
-
-        if (segments.length == 3 && segments[2].matches("\\d+")) {
-            try {
-                id = Long.parseLong(segments[2]);
-            } catch (NumberFormatException e) {
-                sendResponse(exchange, 400, "{\"error\": \"Invalid ID format\"}");
-                return;
-            }
-        }
-
-        try {
-            switch (method) {
-                case "GET":
-                    if (id != -1) {
-                        handleGetTaskById(exchange, id);
-                    } else {
-                        handleListTasks(exchange);
-                    }
-                    break;
-
-                case "POST":
-                    if (id == -1) {
-                        handleCreateTask(exchange);
-                    } else {
-                        sendResponse(exchange, 400, "{\"error\": \"Invalid Request\"}");
-                    }
-                    break;
-
-                case "PUT":
-                    if (id != -1) {
-                        handleUpdateTask(exchange, id);
-                    } else {
-                        sendResponse(exchange, 400, "{\"error\": \"Missing task ID\"}");
-                    }
-                    break;
-
-                case "DELETE":
-                    if (id != -1) {
-                        handleDeleteTask(exchange, id);
-                    } else {
-                        sendResponse(exchange, 400, "{\"error\": \"Missing task ID\"}");
-                    }
-                    break;
-                default:
-                    sendResponse(exchange, 405, "{\"error\": \"Method Not Allowed\"}");
-                    break;
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            sendResponse(exchange, 400, "{\"error\": \"" + e.getMessage() + "\"}");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendResponse(exchange, 500, "{\"error\": \"Internal Server Error\"}");
-        }
-    }
-
-    private void handleGetTaskById(HttpExchange exchange, long id) throws IOException {
+    public void handleGetTaskById(HttpExchange exchange, long id) throws IOException {
         try {
             Task task = taskService.findById(id);
             if(task != null){
@@ -110,8 +46,7 @@ public class TaskController implements HttpHandler {
         }
     }
 
-
-    private void handleCreateTask(HttpExchange exchange) throws IOException {
+    public void handleCreateTask(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         try {
             //Read JSON
@@ -133,7 +68,7 @@ public class TaskController implements HttpHandler {
         }
     }
 
-    private void handleUpdateTask(HttpExchange exchange, long id) throws IOException {
+    public void handleUpdateTask(HttpExchange exchange, long id) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         try {
             InputStream requestBody = exchange.getRequestBody();
@@ -156,7 +91,7 @@ public class TaskController implements HttpHandler {
         }
     }
 
-    private void handleDeleteTask(HttpExchange exchange, long id) throws IOException {
+    public void handleDeleteTask(HttpExchange exchange, long id) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         try {
             if (taskService.delete(id)){
@@ -170,13 +105,12 @@ public class TaskController implements HttpHandler {
         }
     }
 
-    private void sendResponse(HttpExchange exchange, int status, String body) throws IOException {
+    public void sendResponse(HttpExchange exchange, int status, String body) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         exchange.sendResponseHeaders(status, body.length());
         OutputStream os = exchange.getResponseBody();
         os.write(body.getBytes(StandardCharsets.UTF_8));
         os.close();
     }
-
 
 }
