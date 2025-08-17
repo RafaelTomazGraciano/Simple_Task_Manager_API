@@ -56,10 +56,6 @@ I created this project to deepen my understanding of API development in Java. Th
 - PostgreSQL 17
 - Git
 
-### Database
-
-Both APIs require a PostgreSQL database. Use the provided SQL scripts (`init_db.sql` or `postgresql_setup.sql`) to initialize the database and tables.
-
 ---
 
 ### Java_Task_Manager_API
@@ -111,6 +107,4 @@ Both APIs expose endpoints for:
 - `PUT /tasks/{id}` - Update a task
 - `DELETE /tasks/{id}` - Delete a task
 
-Refer to each API’s controller classes for detailed request/response formats.
 
----
